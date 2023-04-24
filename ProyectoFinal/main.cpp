@@ -46,35 +46,56 @@ void solicitarPolinomios() {
     }
 }
 
+/*
+ 
+ 
+ */
 void deconstruirPolinomio(string& polinomio) {
     string expresion;
     int posicionInicio = -1, posicionFinal = -1;
 //    bool isNumAsigned = false, isExponentAsigned = false;
     
     for (int i = 0; i < polinomio.size(); i++) {
-        bool isNumberOrSign = polinomio.at(i) == '+' || polinomio.at(i) == '-' || (polinomio.at(i) >= '0' && polinomio.at(i) <= '9');
-        
         if (i == 0 && (polinomio.at(i) == '*' || polinomio.at(i) == 'x')) {
-            expresion = "1";
-            cout << expresion << endl;
-            continue;
-        } else if (posicionInicio == -1 && i == (polinomio.size()-1) && polinomio.at(i) == 'x') {   
-            expresion = "1";
-            cout << expresion << endl;
-            continue;
-        } else if (posicionInicio == -1 && polinomio.at(i) == 'x' && (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
             expresion = "1";
             cout << expresion << endl;
             continue;
         }
         
-        if (posicionInicio == -1 && isNumberOrSign) {
-            posicionInicio = i;
-        } else if (posicionInicio != -1 && (polinomio.at(i) == '+' || polinomio.at(i) == '-' || polinomio.at(i) == 'x' || polinomio.at(i) == '*')) {
-            posicionFinal = i;
+        bool isNumberOrSign = polinomio.at(i) == '+' || polinomio.at(i) == '-' || (polinomio.at(i) >= '0' && polinomio.at(i) <= '9');
+        
+        if (posicionInicio == -1) {
+            /**
+             Condicional para establecer que el valor del exponente sea igual a 1 en dos casos:
+                Caso 1. Similar al Caso 1, pero la incognita va al final de la ecuación [...] + x
+                Caso 2. Cuando el input contiene la incognita sin el exponente explicito: x + 3
+            */
+                        
+            if (polinomio.at(i) == 'x' && i == (polinomio.size()-1)) {
+                expresion = "1";
+                cout << expresion << endl;
+            } else if (polinomio.at(i) == 'x' && (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
+                expresion = "1";
+                cout << expresion << endl;
+            }
             
+            /**Condicional para almacenar la posición inicial que señala el  comienza del numero. Se agrege un if anidado ya que existe casos en
+                donde el la ultima posicion contiene un unico digito, por lo que resulta imposible obtenerlo mediante slicing.
+             */
+            if (isNumberOrSign) {
+                posicionInicio = i;
+                
+                if (posicionInicio == polinomio.size() - 1) {
+                    expresion = polinomio.at(i);
+                    cout << expresion << endl;
+
+                }
+            }
+        } else if (polinomio.at(i) == '+' || polinomio.at(i) == '-' || polinomio.at(i) == 'x' || polinomio.at(i) == '*') {
+            posicionFinal = i;
             expresion = {polinomio.begin() + posicionInicio, polinomio.begin() + posicionFinal};
             
+            /**Condicional para almacenar el coeficiente 1 cuando esta implicito como en el caso [...]+x+[....]*/
             if (polinomio.at(i) == 'x' && (polinomio.at(i-1) == '+' || polinomio.at(i-1) == '-')) {
                 expresion += "1";
             }
@@ -83,9 +104,10 @@ void deconstruirPolinomio(string& polinomio) {
             posicionFinal = -1;
             i--;
             cout << expresion << endl;
-        } else if (posicionInicio != -1 && i == (polinomio.size()-1)) {
+        } else if (i == (polinomio.size()-1)) {
             expresion = {polinomio.begin() + posicionInicio, polinomio.end()};
             cout << expresion << endl;
         }
+        
     }
 }
