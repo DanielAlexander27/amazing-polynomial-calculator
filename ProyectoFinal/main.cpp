@@ -52,13 +52,17 @@ void solicitarPolinomios() {
  */
 void deconstruirPolinomio(string& polinomio) {
     string expresion;
-    int posicionInicio = -1, posicionFinal = -1;
-//    bool isNumAsigned = false, isExponentAsigned = false;
-    
+    int posicionInicio = -1, posicionFinal = -1;    
     for (int i = 0; i < polinomio.size(); i++) {
         if (i == 0 && (polinomio.at(i) == '*' || polinomio.at(i) == 'x')) {
             expresion = "1";
             cout << expresion << endl;
+            
+            if (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-') {
+                expresion = "1";
+                cout << expresion << endl;
+            }
+            
             continue;
         }
         
@@ -67,7 +71,7 @@ void deconstruirPolinomio(string& polinomio) {
         if (posicionInicio == -1) {
             /**
              Condicional para establecer que el valor del exponente sea igual a 1 en dos casos:
-                Caso 1. Similar al Caso 1, pero la incognita va al final de la ecuación [...] + x
+                Caso 1. La incognita va al final de la ecuación [...] + x
                 Caso 2. Cuando el input contiene la incognita sin el exponente explicito: x + 3
             */
                         
@@ -79,12 +83,13 @@ void deconstruirPolinomio(string& polinomio) {
                 cout << expresion << endl;
             }
             
-            /**Condicional para almacenar la posición inicial que señala el  comienza del numero. Se agrege un if anidado ya que existe casos en
-                donde el la ultima posicion contiene un unico digito, por lo que resulta imposible obtenerlo mediante slicing.
-             */
+            /**Condicional para almacenar la posición inicial que señala el  comienza del numero.*/
             if (isNumberOrSign) {
                 posicionInicio = i;
                 
+                /** Se agrege un if anidado para obtener el exponente de la última expresion añadida ya que existe casos en donde el la ultima posicion contiene un
+                    unico digito, por lo que resulta imposible obtenerlo mediante slicing. Esto se aplica en los casos cuando [...] + x3.
+                */
                 if (posicionInicio == polinomio.size() - 1) {
                     expresion = polinomio.at(i);
                     cout << expresion << endl;
