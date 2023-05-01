@@ -5,6 +5,10 @@
 //
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cctype>
+
 using namespace std;
 
 struct tPolimonio {
@@ -14,6 +18,8 @@ struct tPolimonio {
 
 // Prototipo de Funciones
 void solicitarPolinomios();
+void limpiarEspaciosPolinomio(string& polinomio);
+bool verificarPolinomio(string& polinomio);
 void deconstruirPolinomio(string& polinomio);
 
 // Main
@@ -31,37 +37,66 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-// Implementacion de Logica en Funciones
+/****
+    Implementacion de Logica en Funciones
+ */
+
+/**
+    La función solicitarPolinomios() se encarga de ... (pendiente por docuemntar)
+ */
 void solicitarPolinomios() {
     int cantidad;
     string polinomio;
     
     cout << "Introduzca la cantidad de polinomios a sumar: ";
     cin >> cantidad;
+    cin.ignore();
     
     for(int i = 0; i < cantidad; i++) {
         cout << "Polinomio " << (i+1) << ": ";
-        cin >> polinomio;
+        getline(cin, polinomio);
+        
+        limpiarEspaciosPolinomio(polinomio);
         deconstruirPolinomio(polinomio);
     }
 }
 
-/*
- 
- 
+
+/**
+    La función limpiarEspaciosPolinomio() se encarga de eliminar caracteres de espacios.
+ */
+void limpiarEspaciosPolinomio(string& polinomio) {
+    // Código realizado con ayuda de ChatGPT
+    polinomio.erase(std::remove_if(polinomio.begin(), polinomio.end(), ::isspace), polinomio.end());
+    cout << polinomio << endl;
+}
+
+/**
+    La función limpiarEspaciosPolinomio() se encarga de eliminar caracteres de espacios.
+ */
+bool verificarPolinomio(string& polinomio) {
+    static string incognita;
+    
+    
+    
+    return true;
+}
+
+
+/**
+    La función deconstruirPolinomio() se encarga de devolver un vector el cual contiene coeficientes, constantes y exponentes.
  */
 void deconstruirPolinomio(string& polinomio) {
+    vector<double> numeros;
     string expresion;
-    int posicionInicio = -1, posicionFinal = -1;    
+    int posicionInicio = -1, posicionFinal = -1;
+    
     for (int i = 0; i < polinomio.size(); i++) {
         if (i == 0 && (polinomio.at(i) == '*' || polinomio.at(i) == 'x')) {
-            expresion = "1";
-            cout << expresion << endl;
+            numeros.push_back(1);
             
-            if (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-') {
-                expresion = "1";
-                cout << expresion << endl;
-            }
+            if (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')
+                numeros.push_back(1);
             
             continue;
         }
@@ -76,11 +111,9 @@ void deconstruirPolinomio(string& polinomio) {
             */
                         
             if (polinomio.at(i) == 'x' && i == (polinomio.size()-1)) {
-                expresion = "1";
-                cout << expresion << endl;
+                numeros.push_back(1);
             } else if (polinomio.at(i) == 'x' && (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
-                expresion = "1";
-                cout << expresion << endl;
+                numeros.push_back(1);
             }
             
             /**Condicional para almacenar la posición inicial que señala el  comienza del numero.*/
@@ -92,8 +125,7 @@ void deconstruirPolinomio(string& polinomio) {
                 */
                 if (posicionInicio == polinomio.size() - 1) {
                     expresion = polinomio.at(i);
-                    cout << expresion << endl;
-
+                    numeros.push_back(stod(expresion));
                 }
             }
         } else if (polinomio.at(i) == '+' || polinomio.at(i) == '-' || polinomio.at(i) == 'x' || polinomio.at(i) == '*') {
@@ -105,14 +137,23 @@ void deconstruirPolinomio(string& polinomio) {
                 expresion += "1";
             }
             
+            numeros.push_back(stod(expresion));
+            
             posicionInicio = -1;
             posicionFinal = -1;
             i--;
-            cout << expresion << endl;
         } else if (i == (polinomio.size()-1)) {
             expresion = {polinomio.begin() + posicionInicio, polinomio.end()};
-            cout << expresion << endl;
+            numeros.push_back(stod(expresion));
         }
         
     }
+    
+    cout << "[";
+    
+    for (auto num : numeros) {
+        cout << num << ", ";
+    }
+    
+    cout << "]" << endl;
 }
