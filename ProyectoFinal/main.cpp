@@ -11,6 +11,7 @@
 
 using namespace std;
 
+char incognita = ' ';
 struct tPolimonio {
     int grado;
     vector<double> coef;
@@ -37,12 +38,10 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-/****
-    Implementacion de Logica en Funciones
- */
 
 /**
-    La función solicitarPolinomios() se encarga de ... (pendiente por docuemntar)
+    **Implementacion de Logica en Funciones
+    **La función solicitarPolinomios() se encarga de ... (pendiente por docuemntar)
  */
 void solicitarPolinomios() {
     int cantidad;
@@ -56,8 +55,11 @@ void solicitarPolinomios() {
         cout << "Polinomio " << (i+1) << ": ";
         getline(cin, polinomio);
         
-        limpiarEspaciosPolinomio(polinomio);
-        deconstruirPolinomio(polinomio);
+        if (verificarPolinomio(polinomio)) {
+            deconstruirPolinomio(polinomio);
+        } else {
+            i--;
+        }
     }
 }
 
@@ -72,13 +74,80 @@ void limpiarEspaciosPolinomio(string& polinomio) {
 }
 
 /**
-    La función limpiarEspaciosPolinomio() se encarga de eliminar caracteres de espacios.
+    La función verificarPolinomio() se encarga de comprobrar que el polinomio introducido cumpla con la estructura necesaria como los símbolos empleados (no se aceptan operaciones como multiplicaciones entre coeficintes ni divisiones) y que los exponentes de las incognitas sean numeros naturales. Sumado a lo anterior verifica que existe una sola variable en la ecuación.
  */
 bool verificarPolinomio(string& polinomio) {
-    static string incognita;
+    limpiarEspaciosPolinomio(polinomio);
     
-    
-    
+    for(int i = 0; i < polinomio.size(); i++) {
+        bool evaluador = (incognita == ' ') ? isalpha(polinomio.at(i)) : polinomio.at(i) == incognita;
+        bool isSign = polinomio.at(i) == '+' || polinomio.at(i) == '-';
+        
+        // Condicional que opera en caso de que la posicion actual no cumple con ser numero, ni signo (+-), ni letra.
+        if (!(isdigit(polinomio.at(i)) || isSign || evaluador)) {
+            
+            // En caso de que el char actual sea punto, se evalua que sea empleado correctamente. Los aspectos a considerar son:
+            //   1. No se aceptan puntos al inicio ni al final del polinomio.
+            //   2. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
+            if (polinomio.at(i) == '.') {
+                
+                if (i == 0 || i == polinomio.size()-1) {
+                    cout << "Error. No se aceptan puntos decimales al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
+                    return false;
+                }
+                
+                if (isdigit(polinomio.at(i-1)) && isdigit(polinomio.at(i+1))) {
+                    // Se lee la expresion en reversa con el fin de encontrar si el elemento previo es un signo +- o una incognita.
+                    for (int j = i-1; j >= 0; j--) {
+                        if (polinomio.at(j) == incognita) {
+                            cout << "Error. Los grados del polinomio (exponentes) deben ser numeros naturales. Vuelva a introducir." << endl << endl;
+                            return false;
+                        } else if (polinomio.at(j) == '+' || polinomio.at(j) == '-') {
+                            break;
+                        }
+                    }
+                    continue;
+                } else {
+                    cout << "Error. El punto decimal debe estar entre dos digitos. No se aceptan valores como .24. Vuelva a introducir" << endl << endl;
+                    return false;
+                }
+            }
+
+            // En caso de que el char actual sea *, se evalua que sea empleado correctamente. Los aspectos a considerar son:
+            //   1. No se aceptan * al inicio ni al final del polinomio.
+            //   2. El * debe estar entre un numero previo y con una incognita posterior. No se aceptan multiplicaciones.
+            if (polinomio.at(i) == '*') {
+                
+                if (i == 0 || i == polinomio.size()-1) {
+                    cout << "Error. No se aceptan * al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
+                    return false;
+                }
+                
+                if (isdigit(polinomio.at(i-1)) && isalpha(polinomio.at(i+1))) {
+                    continue;
+                } else {
+                    cout << "Error. El * debe estar entre un numero previo y con una incognita posterior. No se aceptan multiplicaciones. Vuelva a introducir" << endl << endl;
+                    return false;
+                }
+            }
+            
+            // Un error comun suele ser introducir numeros de punto flotante con la coma (,).
+            if (polinomio.at(i) == ',') {
+                cout << "Error. Los numeros de punto flotante van con punto (.), no con coma(,)." << endl << endl;
+                return false;
+            }
+            
+            // Mensaje de error genérico
+            cout << "Error. Tan solo se aceptan numeros, letras y signos como (*, +, -). Vuelva a introducir" << endl << endl;
+            return false;
+        }
+        
+        // Establece el caracter de la incognita.
+        if (isalpha(polinomio.at(i)) && incognita == ' ') {
+            incognita = polinomio.at(i);
+        }
+    }
+
     return true;
 }
 
@@ -92,7 +161,7 @@ void deconstruirPolinomio(string& polinomio) {
     int posicionInicio = -1, posicionFinal = -1;
     
     for (int i = 0; i < polinomio.size(); i++) {
-        if (i == 0 && (polinomio.at(i) == '*' || polinomio.at(i) == 'x')) {
+        if (i == 0 && polinomio.at(i) == incognita) {
             numeros.push_back(1);
             
             if (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')
@@ -101,7 +170,7 @@ void deconstruirPolinomio(string& polinomio) {
             continue;
         }
         
-        bool isNumberOrSign = polinomio.at(i) == '+' || polinomio.at(i) == '-' || (polinomio.at(i) >= '0' && polinomio.at(i) <= '9');
+        bool isSign = polinomio.at(i) == '+' || polinomio.at(i) == '-';
         
         if (posicionInicio == -1) {
             /**
@@ -109,15 +178,12 @@ void deconstruirPolinomio(string& polinomio) {
                 Caso 1. La incognita va al final de la ecuación [...] + x
                 Caso 2. Cuando el input contiene la incognita sin el exponente explicito: x + 3
             */
-                        
-            if (polinomio.at(i) == 'x' && i == (polinomio.size()-1)) {
-                numeros.push_back(1);
-            } else if (polinomio.at(i) == 'x' && (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
+            if (polinomio.at(i) == incognita && (i == (polinomio.size()-1) || polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
                 numeros.push_back(1);
             }
             
-            /**Condicional para almacenar la posición inicial que señala el  comienza del numero.*/
-            if (isNumberOrSign) {
+            // Condicional para almacenar la posición inicial que señala el  comienza del numero.
+            if (isdigit(polinomio.at(i)) || isSign) {
                 posicionInicio = i;
                 
                 /** Se agrege un if anidado para obtener el exponente de la última expresion añadida ya que existe casos en donde el la ultima posicion contiene un
@@ -128,12 +194,12 @@ void deconstruirPolinomio(string& polinomio) {
                     numeros.push_back(stod(expresion));
                 }
             }
-        } else if (polinomio.at(i) == '+' || polinomio.at(i) == '-' || polinomio.at(i) == 'x' || polinomio.at(i) == '*') {
+        } else if (polinomio.at(i) == '+' || polinomio.at(i) == '-' || polinomio.at(i) == incognita|| polinomio.at(i) == '*') {
             posicionFinal = i;
             expresion = {polinomio.begin() + posicionInicio, polinomio.begin() + posicionFinal};
             
             /**Condicional para almacenar el coeficiente 1 cuando esta implicito como en el caso [...]+x+[....]*/
-            if (polinomio.at(i) == 'x' && (polinomio.at(i-1) == '+' || polinomio.at(i-1) == '-')) {
+            if (polinomio.at(i) == incognita && (polinomio.at(i-1) == '+' || polinomio.at(i-1) == '-')) {
                 expresion += "1";
             }
             
