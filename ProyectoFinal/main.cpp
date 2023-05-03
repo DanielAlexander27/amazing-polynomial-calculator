@@ -109,22 +109,25 @@ bool verificarPolinomio(string& polinomio) {
             
             // En caso de que el char actual sea punto, se evalua que sea empleado correctamente. Los aspectos a considerar son:
             //   1. No se aceptan puntos al inicio ni al final del polinomio.
-            //   2. No se aceptan numeros con puntos decimales como 12.23.4
-            //   3. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
+            //   2. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
+            //   3. No se aceptan numeros con puntos decimales como 12.23.4
+
             if (polinomio.at(i) == '.') {
                 // Caso 1
                 if (i == 0 || i == polinomio.size()-1) {
                     cout << "Error. No se aceptan puntos decimales al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
                     return false;
                 }
-                
-                
-                // Caso 3
+                                
+                // Caso 2
                 if (isdigit(polinomio.at(i-1)) && isdigit(polinomio.at(i+1))) {
                     // Se lee la expresion en reversa con el fin de encontrar si el elemento previo es un signo +- o una incognita.
                     for (int j = i-1; j >= 0; j--) {
                         if (polinomio.at(j) == incognita) {
                             cout << "Error. Los grados del polinomio (exponentes) deben ser numeros naturales. Vuelva a introducir." << endl << endl;
+                            return false;
+                        } else if (polinomio.at(j) == '.') {
+                            cout << "Error. Existen varios puntos decimales en un solo numero." << endl << endl;
                             return false;
                         } else if (polinomio.at(j) == '+' || polinomio.at(j) == '-') {
                             break;
