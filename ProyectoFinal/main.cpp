@@ -12,6 +12,7 @@
 using namespace std;
 
 char incognita = ' ';
+
 struct tPolimonio {
     int grado;
     vector<double> coef;
@@ -48,12 +49,32 @@ void solicitarPolinomios() {
     string polinomio;
     
     cout << "Introduzca la cantidad de polinomios a sumar: ";
-    cin >> cantidad;
-    cin.ignore();
+    
+    while(true) {
+        if (!(cin >> cantidad)) {
+            cout << "Por favor solo ingresa números" << endl;
+            cout << "Introduzca la cantidad de polinomios a sumar: ";
+            // Codigo hecho con ayud de ChatGPT
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        } else if (cin.peek() != '\n' && !isdigit(cin.peek())) {
+            cout << "Por favor solo ingresa números" << endl;
+            cout << "Introduzca la cantidad de polinomios a sumar: ";
+            // Codigo hecho con ayud de ChatGPT
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        } else {
+            break;
+        }
+    }
+    
+    // Codigo hecho con ayud de ChatGPT
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     
     for(int i = 0; i < cantidad; i++) {
         cout << "Polinomio " << (i+1) << ": ";
         getline(cin, polinomio);
+        
         
         if (verificarPolinomio(polinomio)) {
             deconstruirPolinomio(polinomio);
@@ -69,7 +90,7 @@ void solicitarPolinomios() {
  */
 void limpiarEspaciosPolinomio(string& polinomio) {
     // Código realizado con ayuda de ChatGPT
-    polinomio.erase(std::remove_if(polinomio.begin(), polinomio.end(), ::isspace), polinomio.end());
+    polinomio.erase(remove_if(polinomio.begin(), polinomio.end(), ::isspace), polinomio.end());
     cout << polinomio << endl;
 }
 
@@ -88,14 +109,17 @@ bool verificarPolinomio(string& polinomio) {
             
             // En caso de que el char actual sea punto, se evalua que sea empleado correctamente. Los aspectos a considerar son:
             //   1. No se aceptan puntos al inicio ni al final del polinomio.
-            //   2. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
+            //   2. No se aceptan numeros con puntos decimales como 12.23.4
+            //   3. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
             if (polinomio.at(i) == '.') {
-                
+                // Caso 1
                 if (i == 0 || i == polinomio.size()-1) {
                     cout << "Error. No se aceptan puntos decimales al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
                     return false;
                 }
                 
+                
+                // Caso 3
                 if (isdigit(polinomio.at(i-1)) && isdigit(polinomio.at(i+1))) {
                     // Se lee la expresion en reversa con el fin de encontrar si el elemento previo es un signo +- o una incognita.
                     for (int j = i-1; j >= 0; j--) {
@@ -151,7 +175,6 @@ bool verificarPolinomio(string& polinomio) {
     return true;
 }
 
-
 /**
     La función deconstruirPolinomio() se encarga de devolver un vector el cual contiene coeficientes, constantes y exponentes.
  */
@@ -164,7 +187,7 @@ void deconstruirPolinomio(string& polinomio) {
         if (i == 0 && polinomio.at(i) == incognita) {
             numeros.push_back(1);
             
-            if (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')
+            if (i == polinomio.size() - 1 || (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-'))
                 numeros.push_back(1);
             
             continue;
@@ -222,4 +245,8 @@ void deconstruirPolinomio(string& polinomio) {
     }
     
     cout << "]" << endl;
+    
+//    clasificadorNum(numeros);
 }
+
+
