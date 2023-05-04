@@ -8,42 +8,63 @@
 #include <vector>
 #include <algorithm>
 #include <cctype>
+#define INCOGNITA_VALOR_DEFECTO ' '
 
 using namespace std;
 
-char incognita = ' ';
 vector<vector<double>> coeficientesPorGrado;
 
-struct tPolimonio {
-    int grado;
-    vector<double> coef;
+struct tPolimonios {
+    char incognitaGlobal = INCOGNITA_VALOR_DEFECTO;
+    vector<string> listaPolinomios;
+    vector<vector<double>> coeficientesPorGrado;
+    vector<double> polinomioSuma;
 };
 
 // Prototipo de Funciones
-void solicitarPolinomios();
+void sumarNPolinomios(tPolimonios& polinomiosASumar);
+vector<string> solicitarPolinomios(char& incognita);
 void limpiarEspaciosPolinomio(string& polinomio);
-bool verificarPolinomio(string& polinomio);
-void deconstruirPolinomio(string& polinomio);
-void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio);
-void sumaPolinomios(vector<vector<double>>& ecuacion);
-
+bool verificarPolinomio(string& polinomio, char& incognita);
+void deconstruirPolinomio(vector<vector<double>>& coeficientesPorGrado, string& polinomio);
+void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<vector<double>>& coeficientesPorGrado);
+vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGrado);
+void imprimirResultadoSuma(vector<double> polinomioSuma);
 
 // Main
 int main(int argc, const char * argv[]) {
-    solicitarPolinomios();
-    sumaPolinomios(coeficientesPorGrado);
+    tPolimonios estructuraPolinomios;
+    
+    sumarNPolinomios(estructuraPolinomios);
     
     return 0;
 }
 
+/****
+    Implementacion de Logica en Funciones
+ */
+
+void sumarNPolinomios(tPolimonios& polinomiosASumar) {
+    polinomiosASumar.listaPolinomios = solicitarPolinomios(polinomiosASumar.incognitaGlobal);
+    
+    polinomiosASumar.listaPolinomios.at(0);
+    
+    for (int i = 0; i < polinomiosASumar.listaPolinomios.size(); i++) {
+        deconstruirPolinomio(polinomiosASumar.coeficientesPorGrado, polinomiosASumar.listaPolinomios.at(i));
+    }
+    
+    polinomiosASumar.polinomioSuma = sumarTerminosSemajantes(polinomiosASumar.coeficientesPorGrado);
+    imprimirResultadoSuma(polinomiosASumar.polinomioSuma);
+}
 
 /**
-    **Implementacion de Logica en Funciones
-    **La función solicitarPolinomios() se encarga de ... (pendiente por docuemntar)
+    La función solicitarPolinomios() se encarga de solicitar una cantidad N de polinomios ingresados por el usuario. Verifica que el polinomio introducido sea correcto
+    y devuelve un vector<string> que contiene aquellos polinomios.
  */
-void solicitarPolinomios() {
-    int cantidad;
+vector<string> solicitarPolinomios(char& incognita) {
+    vector<string> listaPolinomios;
     string polinomio;
+    int cantidad;
     
     cout << "Introduzca la cantidad de polinomios a sumar: ";
     
@@ -51,13 +72,13 @@ void solicitarPolinomios() {
         if (!(cin >> cantidad)) {
             cout << "Por favor solo ingresa números" << endl;
             cout << "Introduzca la cantidad de polinomios a sumar: ";
-            // Codigo hecho con ayud de ChatGPT
+            // Codigo hecho con ayuda de ChatGPT
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else if (cin.peek() != '\n' && !isdigit(cin.peek())) {
             cout << "Por favor solo ingresa números" << endl;
             cout << "Introduzca la cantidad de polinomios a sumar: ";
-            // Codigo hecho con ayud de ChatGPT
+            // Codigo hecho con ayuda de ChatGPT
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
@@ -65,19 +86,23 @@ void solicitarPolinomios() {
         }
     }
     
-    // Codigo hecho con ayud de ChatGPT
+    // Codigo hecho con ayuda de ChatGPT
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cout << endl;
     
     for(int i = 0; i < cantidad; i++) {
         cout << "Polinomio " << (i+1) << ": ";
         getline(cin, polinomio);
         
-        if (verificarPolinomio(polinomio)) {
-            deconstruirPolinomio(polinomio);
+        if (verificarPolinomio(polinomio, incognita)) {
+//            deconstruirPolinomio(polinomio);
+            listaPolinomios.push_back(polinomio);
         } else {
             i--;
         }
     }
+    
+    return listaPolinomios;
 }
 
 
@@ -93,7 +118,7 @@ void limpiarEspaciosPolinomio(string& polinomio) {
 /**
     La función verificarPolinomio() se encarga de comprobrar que el polinomio introducido cumpla con la estructura necesaria como los símbolos empleados (no se aceptan operaciones como multiplicaciones entre coeficintes ni divisiones) y que los exponentes de las incognitas sean numeros naturales. Sumado a lo anterior verifica que existe una sola variable en la ecuación.
  */
-bool verificarPolinomio(string& polinomio) {
+bool verificarPolinomio(string& polinomio, char& incognita) {
     limpiarEspaciosPolinomio(polinomio);
     
     for(int i = 0; i < polinomio.size(); i++) {
@@ -176,13 +201,13 @@ bool verificarPolinomio(string& polinomio) {
 /**
     La función deconstruirPolinomio() se encarga de devolver un vector el cual contiene coeficientes, constantes y exponentes.
  */
-void deconstruirPolinomio(string& polinomio) {
+void deconstruirPolinomio(vector<vector<double>>& coeficientesPorGrado, string& polinomio) {
     vector<double> numeros;
     string stringCoef;
     int posicionInicio = -1, posicionFinal = -1;
     
     for (int i = 0; i < polinomio.size(); i++) {
-        if (i == 0 && polinomio.at(i) == incognita) {
+        if (i == 0 && isalpha(polinomio.at(i))) {
             numeros.push_back(1);
             
             if (i == polinomio.size() - 1 || (polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-'))
@@ -199,7 +224,7 @@ void deconstruirPolinomio(string& polinomio) {
              Caso 1. La incognita va al final de la ecuación [...] + x
              Caso 2. Cuando el input contiene la incognita sin el exponente explicito: x + 3
              */
-            if (polinomio.at(i) == incognita && (i == (polinomio.size()-1) || polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
+            if (isalpha(polinomio.at(i)) && (i == (polinomio.size()-1) || polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
                 numeros.push_back(1);
             }
             
@@ -215,12 +240,12 @@ void deconstruirPolinomio(string& polinomio) {
                     numeros.push_back(stod(stringCoef));
                 }
             }
-        } else if (polinomio.at(i) == '+' || polinomio.at(i) == '-' || polinomio.at(i) == incognita|| polinomio.at(i) == '*') {
+        } else if (polinomio.at(i) == '+' || polinomio.at(i) == '-' || isalpha(polinomio.at(i)) || polinomio.at(i) == '*') {
             posicionFinal = i;
             stringCoef = {polinomio.begin() + posicionInicio, polinomio.begin() + posicionFinal};
             
             /**Condicional para almacenar el coeficiente 1 cuando esta implicito como en el caso [...]+x+[....]*/
-            if (polinomio.at(i) == incognita && (polinomio.at(i-1) == '+' || polinomio.at(i-1) == '-')) {
+            if (isalpha(polinomio.at(i)) && (polinomio.at(i-1) == '+' || polinomio.at(i-1) == '-')) {
                 stringCoef += "1";
             }
             
@@ -244,21 +269,21 @@ void deconstruirPolinomio(string& polinomio) {
     
     cout << "]" << endl;
     
-    clasificarCoefPorGrado(numeros, polinomio);
+    clasificarCoefPorGrado(numeros, polinomio, coeficientesPorGrado);
 }
 
-void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio) {
+void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<vector<double>>& coeficientesPorGrado) {
     unsigned int temp = 0;
-    bool detectarx = false;
+    bool detectarIncognita = false;
 
     for (int i = 0; i < polinomio.size(); i++) {
-        if (polinomio.at(i) == incognita) {
-            detectarx = true;
+        if (isalpha(polinomio.at(i))) {
+            detectarIncognita = true;
         }
         
-        if (polinomio.at(i) == '+' or polinomio.at(i) == '-' or i == polinomio.size() - 1 ) {
+        if (i != 0 && (polinomio.at(i) == '+' or polinomio.at(i) == '-' or i == polinomio.size() - 1)) {
             double coef = numeros.at(temp);
-            if (detectarx == true) {
+            if (detectarIncognita) {
                 double exp = numeros.at(temp + 1);
                 if (coeficientesPorGrado.size() == 0 ||  exp > (coeficientesPorGrado.size() - 1)) {
                     
@@ -280,8 +305,8 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio) {
                 temp += 1;
             }
             
-            if (detectarx)
-                detectarx = !detectarx;
+            if (detectarIncognita)
+                detectarIncognita = !detectarIncognita;
         }
     }
     
@@ -298,20 +323,53 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio) {
     }
 }
 
-void sumaPolinomios(vector<vector<double>> &ecuacion){
-    vector<double>resultados_suma;
+vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGrado){
+    vector<double> resultadosSuma;
     
-    for(int i=0; i<ecuacion.size(); i++){
+    for(int i=0; i<coeficientesPorGrado.size(); i++){
         double result=0;
-        for(int j=0; j<ecuacion.at(i).size(); j++){
-            result+=ecuacion.at(i).at(j);
+        for(int j=0; j<coeficientesPorGrado.at(i).size(); j++){
+            result+=coeficientesPorGrado.at(i).at(j);
         }
-        resultados_suma.push_back(result);
+        resultadosSuma.push_back(result);
     }
     
-    for(int i=0; i<resultados_suma.size(); i++) {
-        cout << "Suma - Grado " << i+1 << ": ";
-        cout << resultados_suma[i] << " ";
+    for(int i=0; i < resultadosSuma.size(); i++) {
+        cout << "Suma - Grado " << i << ": ";
+        cout << resultadosSuma[i] << " ";
         cout << endl;
     }
+    
+    return resultadosSuma;
+}
+
+void imprimirResultadoSuma(vector<double> polinomioSuma) {
+    cout << endl;
+    cout << "El polinomo suma es de grado " << polinomioSuma.size() - 1 << " :" << endl;
+    
+    unsigned grado = 0;
+    for (const auto& coeficienteSuma : polinomioSuma) {
+        if (coeficienteSuma == 0) {
+            grado++;
+            continue;
+        }
+        
+        if (coeficienteSuma < 0) {
+            cout << "- " << coeficienteSuma * (-1);
+        } else if (grado > 0) {
+            cout << "+ ";
+        }
+        
+        if (grado == 0) {
+            cout << coeficienteSuma << " ";
+            grado++;
+            continue;
+        }
+        
+        cout << coeficienteSuma << "*x" << grado << " ";
+        grado++;
+    }
+    
+    cout << endl;
+    
 }
