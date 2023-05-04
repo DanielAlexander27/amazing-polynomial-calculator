@@ -12,6 +12,7 @@
 using namespace std;
 
 char incognita = ' ';
+vector<vector<double>> coeficientesPorGrado;
 
 struct tPolimonio {
     int grado;
@@ -23,18 +24,14 @@ void solicitarPolinomios();
 void limpiarEspaciosPolinomio(string& polinomio);
 bool verificarPolinomio(string& polinomio);
 void deconstruirPolinomio(string& polinomio);
+void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio);
+void sumaPolinomios(vector<vector<double>>& ecuacion);
+
 
 // Main
 int main(int argc, const char * argv[]) {
     solicitarPolinomios();
-    
-//    vector<int> vector1 {1, 2, 3, 4,5};
-//    vector<int> vector2 {vector1.begin()+2, vector1.end()};
-//
-//    for(auto num : vector2) {
-//        cout << num << endl;
-//    }
-//
+    sumaPolinomios(coeficientesPorGrado);
     
     return 0;
 }
@@ -75,7 +72,6 @@ void solicitarPolinomios() {
         cout << "Polinomio " << (i+1) << ": ";
         getline(cin, polinomio);
         
-        
         if (verificarPolinomio(polinomio)) {
             deconstruirPolinomio(polinomio);
         } else {
@@ -111,7 +107,6 @@ bool verificarPolinomio(string& polinomio) {
             //   1. No se aceptan puntos al inicio ni al final del polinomio.
             //   2. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
             //   3. No se aceptan numeros con puntos decimales como 12.23.4
-
             if (polinomio.at(i) == '.') {
                 // Caso 1
                 if (i == 0 || i == polinomio.size()-1) {
@@ -183,7 +178,7 @@ bool verificarPolinomio(string& polinomio) {
  */
 void deconstruirPolinomio(string& polinomio) {
     vector<double> numeros;
-    string expresion;
+    string stringCoef;
     int posicionInicio = -1, posicionFinal = -1;
     
     for (int i = 0; i < polinomio.size(); i++) {
@@ -201,9 +196,9 @@ void deconstruirPolinomio(string& polinomio) {
         if (posicionInicio == -1) {
             /**
              Condicional para establecer que el valor del exponente sea igual a 1 en dos casos:
-                Caso 1. La incognita va al final de la ecuación [...] + x
-                Caso 2. Cuando el input contiene la incognita sin el exponente explicito: x + 3
-            */
+             Caso 1. La incognita va al final de la ecuación [...] + x
+             Caso 2. Cuando el input contiene la incognita sin el exponente explicito: x + 3
+             */
             if (polinomio.at(i) == incognita && (i == (polinomio.size()-1) || polinomio.at(i+1) == '+' || polinomio.at(i+1) == '-')) {
                 numeros.push_back(1);
             }
@@ -213,30 +208,30 @@ void deconstruirPolinomio(string& polinomio) {
                 posicionInicio = i;
                 
                 /** Se agrege un if anidado para obtener el exponente de la última expresion añadida ya que existe casos en donde el la ultima posicion contiene un
-                    unico digito, por lo que resulta imposible obtenerlo mediante slicing. Esto se aplica en los casos cuando [...] + x3.
-                */
+                 unico digito, por lo que resulta imposible obtenerlo mediante slicing. Esto se aplica en los casos cuando [...] + x3.
+                 */
                 if (posicionInicio == polinomio.size() - 1) {
-                    expresion = polinomio.at(i);
-                    numeros.push_back(stod(expresion));
+                    stringCoef = polinomio.at(i);
+                    numeros.push_back(stod(stringCoef));
                 }
             }
         } else if (polinomio.at(i) == '+' || polinomio.at(i) == '-' || polinomio.at(i) == incognita|| polinomio.at(i) == '*') {
             posicionFinal = i;
-            expresion = {polinomio.begin() + posicionInicio, polinomio.begin() + posicionFinal};
+            stringCoef = {polinomio.begin() + posicionInicio, polinomio.begin() + posicionFinal};
             
             /**Condicional para almacenar el coeficiente 1 cuando esta implicito como en el caso [...]+x+[....]*/
             if (polinomio.at(i) == incognita && (polinomio.at(i-1) == '+' || polinomio.at(i-1) == '-')) {
-                expresion += "1";
+                stringCoef += "1";
             }
             
-            numeros.push_back(stod(expresion));
+            numeros.push_back(stod(stringCoef));
             
             posicionInicio = -1;
             posicionFinal = -1;
             i--;
         } else if (i == (polinomio.size()-1)) {
-            expresion = {polinomio.begin() + posicionInicio, polinomio.end()};
-            numeros.push_back(stod(expresion));
+            stringCoef = {polinomio.begin() + posicionInicio, polinomio.end()};
+            numeros.push_back(stod(stringCoef));
         }
         
     }
@@ -249,7 +244,74 @@ void deconstruirPolinomio(string& polinomio) {
     
     cout << "]" << endl;
     
-//    clasificadorNum(numeros);
+    clasificarCoefPorGrado(numeros, polinomio);
 }
 
+void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio) {
+    unsigned int temp = 0;
+    bool detectarx = false;
 
+    for (int i = 0; i < polinomio.size(); i++) {
+        if (polinomio.at(i) == incognita) {
+            detectarx = true;
+        }
+        
+        if (polinomio.at(i) == '+' or polinomio.at(i) == '-' or i == polinomio.size() - 1 ) {
+            double coef = numeros.at(temp);
+            if (detectarx == true) {
+                double exp = numeros.at(temp + 1);
+                if (coeficientesPorGrado.size() == 0 ||  exp > (coeficientesPorGrado.size() - 1)) {
+                    
+                    double tester124 = coeficientesPorGrado.size();
+                    double condiition = exp - (tester124 - 1);
+                    for (int j = 0; j < condiition; j++) {
+                        vector<double> tempVector;
+                        coeficientesPorGrado.push_back(tempVector);
+                    }
+                }
+                coeficientesPorGrado.at(exp).push_back(coef);
+                temp += 2;
+            } else {
+                if (coeficientesPorGrado.size() == 0) {
+                    vector<double> tempVector;
+                    coeficientesPorGrado.push_back(tempVector);
+                }
+                coeficientesPorGrado.at(0).push_back(coef);
+                temp += 1;
+            }
+            
+            if (detectarx)
+                detectarx = !detectarx;
+        }
+    }
+    
+    int gradoNum = 0;
+    
+    cout << "Vector de Vectores" << endl;
+    for (auto grado: coeficientesPorGrado ) {
+        cout << "Grado " << gradoNum << ": ";
+        for(auto num: grado){
+            cout<<num<<" ";
+        }
+        gradoNum++;
+        cout<<endl;
+    }
+}
+
+void sumaPolinomios(vector<vector<double>> &ecuacion){
+    vector<double>resultados_suma;
+    
+    for(int i=0; i<ecuacion.size(); i++){
+        double result=0;
+        for(int j=0; j<ecuacion.at(i).size(); j++){
+            result+=ecuacion.at(i).at(j);
+        }
+        resultados_suma.push_back(result);
+    }
+    
+    for(int i=0; i<resultados_suma.size(); i++) {
+        cout << "Suma - Grado " << i+1 << ": ";
+        cout << resultados_suma[i] << " ";
+        cout << endl;
+    }
+}
