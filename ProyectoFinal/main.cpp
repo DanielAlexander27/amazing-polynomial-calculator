@@ -357,7 +357,7 @@ void imprimirResultadoSuma(vector<double> polinomioSuma) {
         if (coeficienteSuma < 0) {
             cout << "- " << coeficienteSuma * (-1);
         } else if (grado > 0) {
-            cout << "+ ";
+            cout << "+ " << coeficienteSuma;
         }
         
         if (grado == 0) {
@@ -366,10 +366,10 @@ void imprimirResultadoSuma(vector<double> polinomioSuma) {
             continue;
         }
         
-        cout << coeficienteSuma << "*x" << grado << " ";
+        cout << "*x" << grado << " ";
         grado++;
     }
     
-    cout << endl;
+    cout << endl;   
     
 }
