@@ -34,7 +34,6 @@ void imprimirResultadoSuma(vector<double> polinomioSuma);
 // Main
 int main(int argc, const char * argv[]) {
     tPolimonios estructuraPolinomios;
-    
     sumarNPolinomios(estructuraPolinomios);
     
     return 0;
@@ -112,7 +111,6 @@ vector<string> solicitarPolinomios(char& incognita) {
 void limpiarEspaciosPolinomio(string& polinomio) {
     // Código realizado con ayuda de ChatGPT
     polinomio.erase(remove_if(polinomio.begin(), polinomio.end(), ::isspace), polinomio.end());
-    cout << polinomio << endl;
 }
 
 /**
@@ -121,12 +119,23 @@ void limpiarEspaciosPolinomio(string& polinomio) {
 bool verificarPolinomio(string& polinomio, char& incognita) {
     limpiarEspaciosPolinomio(polinomio);
     
+    if (polinomio.empty()) {
+        cout << "Input vacío. Introduzca un polinomio" << endl << endl;
+        return false;
+    }
+    
+    
     for(int i = 0; i < polinomio.size(); i++) {
         bool evaluador = (incognita == ' ') ? isalpha(polinomio.at(i)) : polinomio.at(i) == incognita;
         bool isSign = polinomio.at(i) == '+' || polinomio.at(i) == '-';
         
         // Condicional que opera en caso de que la posicion actual no cumple con ser numero, ni signo (+-), ni letra.
         if (!(isdigit(polinomio.at(i)) || isSign || evaluador)) {
+            if (isalpha(polinomio.at(i)) && (polinomio.at(i) != incognita)) {
+                cout << "Error. Solo se aceptan polinomios de una incógnita. Vuelva a introducir" << endl << endl;
+                return false;
+            }
+            
             
             // En caso de que el char actual sea punto, se evalua que sea empleado correctamente. Los aspectos a considerar son:
             //   1. No se aceptan puntos al inicio ni al final del polinomio.
@@ -261,13 +270,13 @@ void deconstruirPolinomio(vector<vector<double>>& coeficientesPorGrado, string& 
         
     }
     
-    cout << "[";
-    
-    for (auto num : numeros) {
-        cout << num << ", ";
-    }
-    
-    cout << "]" << endl;
+//    cout << "[";
+//
+//    for (auto num : numeros) {
+//        cout << num << ", ";
+//    }
+//
+//    cout << "]" << endl;
     
     clasificarCoefPorGrado(numeros, polinomio, coeficientesPorGrado);
 }
@@ -281,14 +290,14 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<v
             detectarIncognita = true;
         }
         
-        if (i != 0 && (polinomio.at(i) == '+' or polinomio.at(i) == '-' or i == polinomio.size() - 1)) {
+        if ((i != 0 && (polinomio.at(i) == '+' or polinomio.at(i) == '-')) or i == polinomio.size() - 1) {
             double coef = numeros.at(temp);
             if (detectarIncognita) {
                 double exp = numeros.at(temp + 1);
+                
                 if (coeficientesPorGrado.size() == 0 ||  exp > (coeficientesPorGrado.size() - 1)) {
-                    
-                    double tester124 = coeficientesPorGrado.size();
-                    double condiition = exp - (tester124 - 1);
+                    double tamanioVector = coeficientesPorGrado.size();
+                    int condiition = exp - (tamanioVector - 1);
                     for (int j = 0; j < condiition; j++) {
                         vector<double> tempVector;
                         coeficientesPorGrado.push_back(tempVector);
@@ -310,17 +319,15 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<v
         }
     }
     
-    int gradoNum = 0;
-    
-    cout << "Vector de Vectores" << endl;
-    for (auto grado: coeficientesPorGrado ) {
-        cout << "Grado " << gradoNum << ": ";
-        for(auto num: grado){
-            cout<<num<<" ";
-        }
-        gradoNum++;
-        cout<<endl;
-    }
+//    int gradoNum = 0;
+//    for (auto grado: coeficientesPorGrado ) {
+//        cout << "Grado " << gradoNum << ": ";
+//        for(auto num: grado){
+//            cout<<num<<" ";
+//        }
+//        gradoNum++;
+//        cout<<endl;
+//    }
 }
 
 vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGrado){
@@ -334,11 +341,26 @@ vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGr
         resultadosSuma.push_back(result);
     }
     
-    for(int i=0; i < resultadosSuma.size(); i++) {
-        cout << "Suma - Grado " << i << ": ";
-        cout << resultadosSuma[i] << " ";
-        cout << endl;
+    // Existen casos en donde el grado mayor corresponde a una suma de 0. Por lo tanto, hay que retroceder hasta encontrar
+    // un grado con coeficiente != 0.
+    
+    unsigned long j = resultadosSuma.size() - 1;
+    
+    for (; j > 0; j--) {
+        if (resultadosSuma.at(j) == 0) {
+            resultadosSuma.pop_back();
+        } else {
+            break;
+        }
     }
+    
+    
+    
+//    for(int i=0; i < resultadosSuma.size(); i++) {
+//        cout << "Suma - Grado " << i << ": ";
+//        cout << resultadosSuma[i] << " ";
+//        cout << endl;
+//    }
     
     return resultadosSuma;
 }
@@ -347,7 +369,12 @@ void imprimirResultadoSuma(vector<double> polinomioSuma) {
     cout << endl;
     cout << "El polinomo suma es de grado " << polinomioSuma.size() - 1 << " :" << endl;
     
-    unsigned grado = 0;
+    if (polinomioSuma.size() == 1 && polinomioSuma.at(0) == 0) {
+        cout << 0 << endl << endl;
+        return;
+    }
+    
+    unsigned int grado = 0;
     for (const auto& coeficienteSuma : polinomioSuma) {
         if (coeficienteSuma == 0) {
             grado++;
@@ -360,13 +387,12 @@ void imprimirResultadoSuma(vector<double> polinomioSuma) {
             cout << "+ " << coeficienteSuma;
         }
         
-        if (grado == 0) {
-            cout << coeficienteSuma << " ";
-            grado++;
-            continue;
+        if (grado != 0) {
+            cout << "*x" << grado << " ";
+        } else {
+            cout << " ";
         }
         
-        cout << "*x" << grado << " ";
         grado++;
     }
     
