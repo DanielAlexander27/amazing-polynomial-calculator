@@ -18,7 +18,6 @@ vector<vector<double>> coeficientesPorGrado;
 struct tPolimonios {
     char incognitaGlobal = INCOGNITA_VALOR_DEFECTO;
     vector<string> listaPolinomios;
-//    vector<vector<double>> coeficientesPorGrado;
     map<int, vector<double>> coeficientesPorGrado;
     map<int, double> polinomioSuma;
 };
@@ -98,7 +97,6 @@ vector<string> solicitarPolinomios(char& incognita) {
         getline(cin, polinomio);
         
         if (verificarPolinomio(polinomio, incognita)) {
-//            deconstruirPolinomio(polinomio);
             listaPolinomios.push_back(polinomio);
         } else {
             i--;
@@ -317,13 +315,13 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, map<int,
         }
     }
     
-    for (const auto& grado: coeficientesPorGrado ) {
-        cout << "Grado " << grado.first << ": ";
-        for(const auto& num: grado.second){
-            cout << num <<" ";
-        }
-        cout<<endl;
-    }
+//    for (const auto& grado: coeficientesPorGrado ) {
+//        cout << "Grado " << grado.first << ": ";
+//        for(const auto& num: grado.second){
+//            cout << num <<" ";
+//        }
+//        cout<<endl;
+//    }
 }
 
 /**
