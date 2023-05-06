@@ -67,6 +67,8 @@ vector<string> solicitarPolinomios(char& incognita) {
     
     cout << "Introduzca la cantidad de polinomios a sumar: ";
     
+    // El primer condiconal evalua si el input introducido es incorrecto. El segundo detecta si el input es una mezcla de números
+    // como: "12 ab"
     while(true) {
         if (!(cin >> cantidad)) {
             cout << "Por favor solo ingresa números" << endl;
@@ -270,21 +272,28 @@ void deconstruirPolinomio(vector<vector<double>>& coeficientesPorGrado, string& 
         
     }
     
-//    cout << "[";
-//
-//    for (auto num : numeros) {
-//        cout << num << ", ";
-//    }
-//
-//    cout << "]" << endl;
+    cout << "[";
+
+    for (auto num : numeros) {
+        cout << num << ", ";
+    }
+
+    cout << "]" << endl;
     
     clasificarCoefPorGrado(numeros, polinomio, coeficientesPorGrado);
 }
 
+/**
+    La función clasificarCoefPorGrado() se encarga de clasificar los coeficientes según el grado al que pertenencen.  Esto lo hace almacenando en un vector de vectores,
+    donde el índice del vector principal indica el grado y el vector anidado los coeficientes correspondientes a tal grado.
+ */
 void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<vector<double>>& coeficientesPorGrado) {
     unsigned int temp = 0;
     bool detectarIncognita = false;
-
+    
+    // Para clasificar se lee nuevamente el polinomio. Se detiene cada vez que encuentra un + o - y verifica si encontró
+    // una x (o incógnita). En caso de haber encontrado la x, sabe que el elemento i es coeficiente y el elemento i+1 el grado al que
+    // pertenece. Caso contrario, se toma únicamente el elemento i, el cual pertenece al grado 0.
     for (int i = 0; i < polinomio.size(); i++) {
         if (isalpha(polinomio.at(i))) {
             detectarIncognita = true;
@@ -293,8 +302,10 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<v
         if ((i != 0 && (polinomio.at(i) == '+' or polinomio.at(i) == '-')) or i == polinomio.size() - 1) {
             double coef = numeros.at(temp);
             if (detectarIncognita) {
-                double exp = numeros.at(temp + 1);
+                int exp = numeros.at(temp + 1);
                 
+                // En caso de que el grado no existe dentro del vector se realizan los push_backs necesarios al vector de vectores.
+                //  Determin la cantidad de veces mediante la fórmula: exponente - (vector.size() -1)
                 if (coeficientesPorGrado.size() == 0 ||  exp > (coeficientesPorGrado.size() - 1)) {
                     double tamanioVector = coeficientesPorGrado.size();
                     int condiition = exp - (tamanioVector - 1);
@@ -330,12 +341,16 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<v
 //    }
 }
 
+/**
+    La función sumarTerminosSemejantes() devuelve un nuevo vector<double> que contiene los resultados tras haber sumado los coeficientes del vector de vectores. De igual manera, el índice indica el grado al que el coeficiente pertenece.
+ */
 vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGrado){
     vector<double> resultadosSuma;
     
-    for(int i=0; i<coeficientesPorGrado.size(); i++){
+    // Se recorre el vector de vectores y se va sumando cada uno de sus valores.
+    for(int i=0; i< coeficientesPorGrado.size(); i++){
         double result=0;
-        for(int j=0; j<coeficientesPorGrado.at(i).size(); j++){
+        for(int j=0; j< coeficientesPorGrado.at(i).size(); j++){
             result+=coeficientesPorGrado.at(i).at(j);
         }
         resultadosSuma.push_back(result);
@@ -345,7 +360,6 @@ vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGr
     // un grado con coeficiente != 0.
     
     unsigned long j = resultadosSuma.size() - 1;
-    
     for (; j > 0; j--) {
         if (resultadosSuma.at(j) == 0) {
             resultadosSuma.pop_back();
@@ -353,22 +367,23 @@ vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGr
             break;
         }
     }
-    
-    
-    
+
 //    for(int i=0; i < resultadosSuma.size(); i++) {
 //        cout << "Suma - Grado " << i << ": ";
 //        cout << resultadosSuma[i] << " ";
 //        cout << endl;
 //    }
-    
     return resultadosSuma;
 }
 
+/**
+    La función imprimirResultadoSuma() imprime los resultados de la suma de polinomois.
+ */
 void imprimirResultadoSuma(vector<double> polinomioSuma) {
     cout << endl;
-    cout << "El polinomo suma es de grado " << polinomioSuma.size() - 1 << " :" << endl;
+    cout << "El polinomo suma es de grado " << polinomioSuma.size() - 1 << ": " << endl;
     
+    // En caso de que la respuesta final tras la suma sea 0
     if (polinomioSuma.size() == 1 && polinomioSuma.at(0) == 0) {
         cout << 0 << endl << endl;
         return;
@@ -383,7 +398,7 @@ void imprimirResultadoSuma(vector<double> polinomioSuma) {
         
         if (coeficienteSuma < 0) {
             cout << "- " << coeficienteSuma * (-1);
-        } else if (grado > 0) {
+        } else if (coeficienteSuma > 0) {
             cout << "+ " << coeficienteSuma;
         }
         
@@ -396,6 +411,5 @@ void imprimirResultadoSuma(vector<double> polinomioSuma) {
         grado++;
     }
     
-    cout << endl;   
-    
+    cout << endl;
 }
