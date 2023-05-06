@@ -5,6 +5,7 @@
 //
 
 #include <iostream>
+#include <map>
 #include <vector>
 #include <algorithm>
 #include <cctype>
@@ -17,8 +18,9 @@ vector<vector<double>> coeficientesPorGrado;
 struct tPolimonios {
     char incognitaGlobal = INCOGNITA_VALOR_DEFECTO;
     vector<string> listaPolinomios;
-    vector<vector<double>> coeficientesPorGrado;
-    vector<double> polinomioSuma;
+//    vector<vector<double>> coeficientesPorGrado;
+    map<int, vector<double>> coeficientesPorGrado;
+    map<int, double> polinomioSuma;
 };
 
 // Prototipo de Funciones
@@ -26,10 +28,10 @@ void sumarNPolinomios(tPolimonios& polinomiosASumar);
 vector<string> solicitarPolinomios(char& incognita);
 void limpiarEspaciosPolinomio(string& polinomio);
 bool verificarPolinomio(string& polinomio, char& incognita);
-void deconstruirPolinomio(vector<vector<double>>& coeficientesPorGrado, string& polinomio);
-void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<vector<double>>& coeficientesPorGrado);
-vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGrado);
-void imprimirResultadoSuma(vector<double> polinomioSuma);
+void deconstruirPolinomio(map<int, vector<double>>& coeficientesPorGrado, string& polinomio);
+void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, map<int, vector<double>>& coeficientesPorGrado);
+map<int, double> sumarTerminosSemajantes(map<int, vector<double>>& coeficientesPorGrado);
+void imprimirResultadoSuma(map<int, double> polinomioSuma);
 
 // Main
 int main(int argc, const char * argv[]) {
@@ -212,7 +214,7 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
 /**
     La función deconstruirPolinomio() se encarga de devolver un vector el cual contiene coeficientes, constantes y exponentes.
  */
-void deconstruirPolinomio(vector<vector<double>>& coeficientesPorGrado, string& polinomio) {
+void deconstruirPolinomio(map<int, vector<double>>& coeficientesPorGrado, string& polinomio) {
     vector<double> numeros;
     string stringCoef;
     int posicionInicio = -1, posicionFinal = -1;
@@ -287,7 +289,7 @@ void deconstruirPolinomio(vector<vector<double>>& coeficientesPorGrado, string& 
     La función clasificarCoefPorGrado() se encarga de clasificar los coeficientes según el grado al que pertenencen.  Esto lo hace almacenando en un vector de vectores,
     donde el índice del vector principal indica el grado y el vector anidado los coeficientes correspondientes a tal grado.
  */
-void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<vector<double>>& coeficientesPorGrado) {
+void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, map<int, vector<double>>& coeficientesPorGrado) {
     unsigned int temp = 0;
     bool detectarIncognita = false;
     
@@ -303,25 +305,10 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<v
             double coef = numeros.at(temp);
             if (detectarIncognita) {
                 int exp = numeros.at(temp + 1);
-                
-                // En caso de que el grado no existe dentro del vector se realizan los push_backs necesarios al vector de vectores.
-                //  Determin la cantidad de veces mediante la fórmula: exponente - (vector.size() -1)
-                if (coeficientesPorGrado.size() == 0 ||  exp > (coeficientesPorGrado.size() - 1)) {
-                    double tamanioVector = coeficientesPorGrado.size();
-                    int condiition = exp - (tamanioVector - 1);
-                    for (int j = 0; j < condiition; j++) {
-                        vector<double> tempVector;
-                        coeficientesPorGrado.push_back(tempVector);
-                    }
-                }
-                coeficientesPorGrado.at(exp).push_back(coef);
+                coeficientesPorGrado[exp].push_back(coef);
                 temp += 2;
             } else {
-                if (coeficientesPorGrado.size() == 0) {
-                    vector<double> tempVector;
-                    coeficientesPorGrado.push_back(tempVector);
-                }
-                coeficientesPorGrado.at(0).push_back(coef);
+                coeficientesPorGrado[0].push_back(coef);
                 temp += 1;
             }
             
@@ -330,58 +317,59 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, vector<v
         }
     }
     
-//    int gradoNum = 0;
-//    for (auto grado: coeficientesPorGrado ) {
-//        cout << "Grado " << gradoNum << ": ";
-//        for(auto num: grado){
-//            cout<<num<<" ";
-//        }
-//        gradoNum++;
-//        cout<<endl;
-//    }
+    for (const auto& grado: coeficientesPorGrado ) {
+        cout << "Grado " << grado.first << ": ";
+        for(const auto& num: grado.second){
+            cout << num <<" ";
+        }
+        cout<<endl;
+    }
 }
 
 /**
     La función sumarTerminosSemejantes() devuelve un nuevo vector<double> que contiene los resultados tras haber sumado los coeficientes del vector de vectores. De igual manera, el índice indica el grado al que el coeficiente pertenece.
  */
-vector<double> sumarTerminosSemajantes(vector<vector<double>>& coeficientesPorGrado){
-    vector<double> resultadosSuma;
+map<int, double> sumarTerminosSemajantes(map<int, vector<double>>& coeficientesPorGrado){
+    map<int, double> resultadosSuma;
     
     // Se recorre el vector de vectores y se va sumando cada uno de sus valores.
-    for(int i=0; i< coeficientesPorGrado.size(); i++){
-        double result=0;
-        for(int j=0; j< coeficientesPorGrado.at(i).size(); j++){
-            result+=coeficientesPorGrado.at(i).at(j);
-        }
-        resultadosSuma.push_back(result);
-    }
     
+    for (const auto& val : coeficientesPorGrado) {
+        double result = 0;
+        for (const auto& num : val.second) {
+            result += num;
+        }
+        resultadosSuma[val.first] = result;
+    }
+
     // Existen casos en donde el grado mayor corresponde a una suma de 0. Por lo tanto, hay que retroceder hasta encontrar
     // un grado con coeficiente != 0.
     
-    unsigned long j = resultadosSuma.size() - 1;
-    for (; j > 0; j--) {
-        if (resultadosSuma.at(j) == 0) {
-            resultadosSuma.pop_back();
-        } else {
-            break;
-        }
-    }
+//    unsigned long j = resultadosSuma.size() - 1;
+//    for (; j > 0; j--) {
+//        if (resultadosSuma.at(j) == 0) {
+//            resultadosSuma.pop_back();
+//        } else {
+//            break;
+//        }
+//    }
 
 //    for(int i=0; i < resultadosSuma.size(); i++) {
 //        cout << "Suma - Grado " << i << ": ";
 //        cout << resultadosSuma[i] << " ";
 //        cout << endl;
 //    }
+    
     return resultadosSuma;
 }
 
 /**
     La función imprimirResultadoSuma() imprime los resultados de la suma de polinomois.
  */
-void imprimirResultadoSuma(vector<double> polinomioSuma) {
+void imprimirResultadoSuma(map<int, double> polinomioSuma) {
     cout << endl;
-    cout << "El polinomo suma es de grado " << polinomioSuma.size() - 1 << ": " << endl;
+    // Código hecho con ayuda de ChatGPT
+    cout << "El polinomo suma es de grado " << (polinomioSuma.rbegin())->first << ": " << endl;
     
     // En caso de que la respuesta final tras la suma sea 0
     if (polinomioSuma.size() == 1 && polinomioSuma.at(0) == 0) {
@@ -389,26 +377,18 @@ void imprimirResultadoSuma(vector<double> polinomioSuma) {
         return;
     }
     
-    unsigned int grado = 0;
-    for (const auto& coeficienteSuma : polinomioSuma) {
-        if (coeficienteSuma == 0) {
-            grado++;
-            continue;
+    for (const auto& val : polinomioSuma) {
+        if (val.second < 0) {
+            cout << "- " << val.second * (-1);
+        } else if (val.second > 0) {
+            cout << "+ " << val.second;
         }
         
-        if (coeficienteSuma < 0) {
-            cout << "- " << coeficienteSuma * (-1);
-        } else if (coeficienteSuma > 0) {
-            cout << "+ " << coeficienteSuma;
-        }
-        
-        if (grado != 0) {
-            cout << "*x" << grado << " ";
+        if (val.first != 0) {
+            cout << "*x" << val.first << " ";
         } else {
             cout << " ";
         }
-        
-        grado++;
     }
     
     cout << endl;
