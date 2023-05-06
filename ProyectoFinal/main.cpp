@@ -274,20 +274,20 @@ void deconstruirPolinomio(map<int, vector<double>>& coeficientesPorGrado, string
         
     }
     
-    cout << "[";
-
-    for (auto num : numeros) {
-        cout << num << ", ";
-    }
-
-    cout << "]" << endl;
+//    cout << "[";
+//
+//    for (auto num : numeros) {
+//        cout << num << ", ";
+//    }
+//
+//    cout << "]" << endl;
     
     clasificarCoefPorGrado(numeros, polinomio, coeficientesPorGrado);
 }
 
 /**
-    La función clasificarCoefPorGrado() se encarga de clasificar los coeficientes según el grado al que pertenencen.  Esto lo hace almacenando en un vector de vectores,
-    donde el índice del vector principal indica el grado y el vector anidado los coeficientes correspondientes a tal grado.
+    La función clasificarCoefPorGrado() se encarga de clasificar los coeficientes según el grado al que pertenencen.  Esto lo hace almacenando en un map,
+    donde el key indica el grado y el vector anidado contiene los coeficientes correspondientes a tal grado.
  */
 void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, map<int, vector<double>>& coeficientesPorGrado) {
     unsigned int temp = 0;
@@ -327,32 +327,23 @@ void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, map<int,
 }
 
 /**
-    La función sumarTerminosSemejantes() devuelve un nuevo vector<double> que contiene los resultados tras haber sumado los coeficientes del vector de vectores. De igual manera, el índice indica el grado al que el coeficiente pertenece.
+    La función sumarTerminosSemejantes() devuelve un nuevo map<int, double> que contiene los resultados tras haber sumado los coeficientes del vector de vectores. De igual manera, el valor de key indica el grado al que el coeficiente pertenece.
  */
 map<int, double> sumarTerminosSemajantes(map<int, vector<double>>& coeficientesPorGrado){
     map<int, double> resultadosSuma;
     
-    // Se recorre el vector de vectores y se va sumando cada uno de sus valores.
-    
+    // Se recorre el map y se va sumando cada uno de sus valores.
     for (const auto& val : coeficientesPorGrado) {
         double result = 0;
         for (const auto& num : val.second) {
             result += num;
         }
-        resultadosSuma[val.first] = result;
+        // Si la suma es 0 se descarta aquel grado.
+        if (result != 0)
+            resultadosSuma[val.first] = result;
+        
     }
 
-    // Existen casos en donde el grado mayor corresponde a una suma de 0. Por lo tanto, hay que retroceder hasta encontrar
-    // un grado con coeficiente != 0.
-    
-//    unsigned long j = resultadosSuma.size() - 1;
-//    for (; j > 0; j--) {
-//        if (resultadosSuma.at(j) == 0) {
-//            resultadosSuma.pop_back();
-//        } else {
-//            break;
-//        }
-//    }
 
 //    for(int i=0; i < resultadosSuma.size(); i++) {
 //        cout << "Suma - Grado " << i << ": ";
@@ -372,16 +363,23 @@ void imprimirResultadoSuma(map<int, double> polinomioSuma) {
     cout << "El polinomo suma es de grado " << (polinomioSuma.rbegin())->first << ": " << endl;
     
     // En caso de que la respuesta final tras la suma sea 0
-    if (polinomioSuma.size() == 1 && polinomioSuma.at(0) == 0) {
+    if (polinomioSuma.empty()) {
         cout << 0 << endl << endl;
         return;
     }
     
+    bool primerElemento = true;
     for (const auto& val : polinomioSuma) {
         if (val.second < 0) {
             cout << "- " << val.second * (-1);
         } else if (val.second > 0) {
-            cout << "+ " << val.second;
+            
+            if(!primerElemento) {
+                cout << "+ " << val.second;
+            } else {
+                cout << val.second;
+                primerElemento = false;
+            }
         }
         
         if (val.first != 0) {
