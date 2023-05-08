@@ -23,6 +23,7 @@ struct tPolimonios {
 // Prototipo de Funciones
 void sumarNPolinomios(tPolimonios& polinomiosASumar);
 vector<string> solicitarPolinomios(char& incognita);
+bool revisarEspaciosNumeros(string& polinomio);
 void limpiarEspaciosPolinomio(string& polinomio);
 bool verificarPolinomio(string& polinomio, char& incognita);
 void deconstruirPolinomio(map<int, vector<double>>& coeficientesPorGrado, string& polinomio);
@@ -44,8 +45,6 @@ int main(int argc, const char * argv[]) {
 
 void sumarNPolinomios(tPolimonios& polinomiosASumar) {
     polinomiosASumar.listaPolinomios = solicitarPolinomios(polinomiosASumar.incognitaGlobal);
-    
-    polinomiosASumar.listaPolinomios.at(0);
     
     for (int i = 0; i < polinomiosASumar.listaPolinomios.size(); i++) {
         deconstruirPolinomio(polinomiosASumar.coeficientesPorGrado, polinomiosASumar.listaPolinomios.at(i));
@@ -72,18 +71,15 @@ vector<string> solicitarPolinomios(char& incognita) {
         if (!(cin >> cantidad)) {
             cout << "Por favor solo ingresa números" << endl;
             cout << "Introduzca la cantidad de polinomios a sumar: ";
-            // Codigo hecho con ayuda de ChatGPT
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else if (cin.peek() != '\n' && !isdigit(cin.peek())) {
             cout << "Por favor solo ingresa números" << endl;
             cout << "Introduzca la cantidad de polinomios a sumar: ";
-            // Codigo hecho con ayuda de ChatGPT
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else {
             break;
         }
+        // Codigo hecho con ayuda de ChatGPT
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     
     // Codigo hecho con ayuda de ChatGPT
@@ -94,7 +90,7 @@ vector<string> solicitarPolinomios(char& incognita) {
         cout << "Polinomio " << (i+1) << ": ";
         getline(cin, polinomio);
         
-        if (verificarPolinomio(polinomio, incognita)) {
+        if (revisarEspaciosNumeros(polinomio) && verificarPolinomio(polinomio, incognita)) {
             listaPolinomios.push_back(polinomio);
         } else {
             i--;
@@ -102,6 +98,31 @@ vector<string> solicitarPolinomios(char& incognita) {
     }
     
     return listaPolinomios;
+}
+
+/**
+    La función revisarEspaciosNumeros() se encarga de notificar al usuario error cuando introduce numeros separados sin signos como 10  40.
+ */
+bool revisarEspaciosNumeros(string& polinomio) {
+    bool numeroDetectado = false;
+    
+    for (int i = 0; i < polinomio.size(); i++) {
+        
+        if (isnumber(polinomio.at(i))) {
+            numeroDetectado = true;
+        } else if (polinomio.at(i) == ' ' && numeroDetectado) {
+            for (int j = i; j < polinomio.size(); j++) {
+                if (isnumber(polinomio.at(j))) {
+                    cout << "Error. Los numeros estan separados por espacios y no por signos. Vuelva a introducir" << endl << endl;
+                    return false;
+                } else if (isalpha(polinomio.at(j)) || polinomio.at(j) == '*' || polinomio.at(j) == '+' || polinomio.at(j) == '-') {
+                    numeroDetectado = false;
+                    break;
+                }
+            }
+        }
+    }
+    return true;
 }
 
 
@@ -152,11 +173,12 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
                     break;
                 }
             }
-            continue;
         }
         
         // Condicional que opera en caso de que la posicion actual no cumple con ser numero, ni signo (+-), ni letra.
         if (!(isdigit(polinomio.at(i)) || isSign || evaluadorLetra)) {
+            
+            // Condicional que evalúa que se acepte una sola incógnita
             if (isalpha(polinomio.at(i)) && (polinomio.at(i) != incognita)) {
                 cout << "Error. Solo se aceptan polinomios de una incógnita. Vuelva a introducir" << endl << endl;
                 return false;
