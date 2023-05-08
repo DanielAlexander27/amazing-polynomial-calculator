@@ -13,8 +13,6 @@
 
 using namespace std;
 
-vector<vector<double>> coeficientesPorGrado;
-
 struct tPolimonios {
     char incognitaGlobal = INCOGNITA_VALOR_DEFECTO;
     vector<string> listaPolinomios;
