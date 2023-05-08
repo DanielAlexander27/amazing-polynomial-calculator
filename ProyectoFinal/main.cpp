@@ -128,10 +128,10 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
     
     
     for(int i = 0; i < polinomio.size(); i++) {
-        bool evaluador = (incognita == ' ') ? isalpha(polinomio.at(i)) : polinomio.at(i) == incognita;
+        bool evaluadorLetra = (incognita == ' ') ? isalpha(polinomio.at(i)) : polinomio.at(i) == incognita;
         bool isSign = polinomio.at(i) == '+' || polinomio.at(i) == '-';
         
-        //Condicional que evita casos donde el input sea algo como ++3 o --4.
+        // Condicional que evita casos donde el input sea algo como ++3 o --4.
         if (isSign) {
             if (i == polinomio.size() - 1) {
                 cout << "Error. No se aceptan signos de + o - al final del polinomio. Vuelva a introducir" << endl << endl;
@@ -144,8 +144,21 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
         }
         
         
+        // Condicional que evita casos donde el exponente contenga incógnitas como x22x.
+        if (evaluadorLetra) {
+            for (int j = i+1; j < polinomio.size(); j++) {
+                if (isalpha(polinomio.at(j))) {
+                    cout << "Error. No se aceptan incognitas en el exponente. Vuelva a introducir" << endl << endl;
+                    return false;
+                } else if (polinomio.at(j) == '+' || polinomio.at(j) == '-') {
+                    break;
+                }
+            }
+            continue;
+        }
+        
         // Condicional que opera en caso de que la posicion actual no cumple con ser numero, ni signo (+-), ni letra.
-        if (!(isdigit(polinomio.at(i)) || isSign || evaluador)) {
+        if (!(isdigit(polinomio.at(i)) || isSign || evaluadorLetra)) {
             if (isalpha(polinomio.at(i)) && (polinomio.at(i) != incognita)) {
                 cout << "Error. Solo se aceptan polinomios de una incógnita. Vuelva a introducir" << endl << endl;
                 return false;
@@ -389,7 +402,6 @@ void imprimirResultadoSuma(map<int, double> polinomioSuma) {
                 cout << "+ " << val.second;
             } else {
                 cout << val.second;
-                primerElemento = false;
             }
         }
         
@@ -398,6 +410,7 @@ void imprimirResultadoSuma(map<int, double> polinomioSuma) {
         } else {
             cout << " ";
         }
+        primerElemento = false;
     }
     
     cout << endl;
