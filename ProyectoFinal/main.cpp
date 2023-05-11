@@ -98,7 +98,6 @@ vector<string> solicitarPolinomios(char& incognita) {
             i--;
         }
     }
-    
     return listaPolinomios;
 }
 
@@ -189,8 +188,6 @@ bool auxVerificarAsterisco(string& polinomio, int& position) {
     }
 }
 
-
-
 /**
     La función verificarPolinomio() se encarga de comprobrar que el polinomio introducido cumpla con la estructura necesaria como los símbolos empleados (no se aceptan operaciones como multiplicaciones entre coeficintes ni divisiones) y que los exponentes de las incognitas sean numeros naturales. Sumado a lo anterior verifica que existe una sola variable en la ecuación.
  */
@@ -217,7 +214,6 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
             }
             return false;
         }
-        
         
         // Condicional que evita casos donde el exponente contenga incógnitas como x22x.
         if (evaluadorLetra) {
@@ -278,7 +274,6 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
             incognita = polinomio.at(i);
         }
     }
-
     return true;
 }
 
@@ -342,7 +337,6 @@ void deconstruirPolinomio(map<int, vector<double>>& coeficientesPorGrado, string
             stringCoef = {polinomio.begin() + posicionInicio, polinomio.end()};
             numeros.push_back(stod(stringCoef));
         }
-        
     }
     
 //    cout << "[";
@@ -414,7 +408,6 @@ map<int, double> sumarTerminosSemajantes(map<int, vector<double>>& coeficientesP
             resultadosSuma[val.first] = result;
         
     }
-
 
 //    for(int i=0; i < resultadosSuma.size(); i++) {
 //        cout << "Suma - Grado " << i << ": ";
