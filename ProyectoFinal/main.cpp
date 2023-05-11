@@ -25,6 +25,8 @@ void sumarNPolinomios(tPolimonios& polinomiosASumar);
 vector<string> solicitarPolinomios(char& incognita);
 bool revisarEspaciosNumeros(string& polinomio);
 void limpiarEspaciosPolinomio(string& polinomio);
+bool auxVerificarPunto(string& polinomio, int& position);
+bool auxVerificarAsterisco(string& polinomio, int& position);
 bool verificarPolinomio(string& polinomio, char& incognita);
 void deconstruirPolinomio(map<int, vector<double>>& coeficientesPorGrado, string& polinomio);
 void clasificarCoefPorGrado(vector<double>& numeros, string& polinomio, map<int, vector<double>>& coeficientesPorGrado);
@@ -134,6 +136,61 @@ void limpiarEspaciosPolinomio(string& polinomio) {
     polinomio.erase(remove_if(polinomio.begin(), polinomio.end(), ::isspace), polinomio.end());
 }
 
+// La función auxVerificarPunto() es auxiliar de la funcion verificarPolinomio(). Es llamada cuando se ha detectado un punto.
+// Se encarga de evaluar que el punto (.) sea empleado correctamente. Los aspectos a considerar son:
+//   1. No se aceptan puntos al inicio ni al final del polinomio.
+//   2. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
+//      2.1. No se aceptan numeros con varios puntos decimales como 12.23.4
+// Devuelve true si todo está bien y false cuando ha encontrado un error.
+bool auxVerificarPunto(string& polinomio, int& position) {
+    // Caso 1
+    if (position == 0 || position == polinomio.size()-1) {
+        cout << "Error. No se aceptan puntos decimales al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
+        return false;
+    }
+                    
+    // Caso 2 - Se realiza el procedimiento si el punto (.) está entre dos números.
+    if (isdigit(polinomio.at(position-1)) && isdigit(polinomio.at(position+1))) {
+        // Se lee la expresion en reversa con el fin de encontrar si el elemento previo es un signo +- o una incognita.
+        for (int j = position-1; j >= 0; j--) {
+            if (isalpha(polinomio.at(j))) {
+                cout << "Error. Los grados del polinomio (exponentes) deben ser numeros naturales. Vuelva a introducir." << endl << endl;
+                return false;
+            } else if (polinomio.at(j) == '.') {
+                cout << "Error. Existen varios puntos decimales en un solo numero." << endl << endl;
+                return false;
+            } else if (polinomio.at(j) == '+' || polinomio.at(j) == '-') {
+                break;
+            }
+        }
+        return true;
+    } else {
+        cout << "Error. El punto decimal debe estar entre dos digitos. No se aceptan valores como .24 o x.2. Vuelva a introducir" << endl << endl;
+        return false;
+    }
+}
+
+// La funcion auxVerificarAsterisco() es auxiliar de la funcion verificarPolinomio(). Es llamada cuando se detecta un asterisco (*).
+// Se evalua que sea empleado correctamente. Los aspectos a considerar son:
+//   1. No se aceptan * al inicio ni al final del polinomio.
+//   2. El * debe estar entre un numero previo y con una incognita posterior. No se aceptan multiplicaciones.
+// Devuelve true si todo está bien y false cuando ha encontrado un error.
+bool auxVerificarAsterisco(string& polinomio, int& position) {
+    if (position == 0 || position == polinomio.size()-1) {
+        cout << "Error. No se aceptan * al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
+        return false;
+    }
+    
+    if (isdigit(polinomio.at(position-1)) && isalpha(polinomio.at(position+1))) {
+        return true;
+    } else {
+        cout << "Error. El * debe estar entre un numero previo y con una incognita posterior. No se aceptan multiplicaciones. Vuelva a introducir" << endl << endl;
+        return false;
+    }
+}
+
+
+
 /**
     La función verificarPolinomio() se encarga de comprobrar que el polinomio introducido cumpla con la estructura necesaria como los símbolos empleados (no se aceptan operaciones como multiplicaciones entre coeficintes ni divisiones) y que los exponentes de las incognitas sean numeros naturales. Sumado a lo anterior verifica que existe una sola variable en la ecuación.
  */
@@ -144,7 +201,6 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
         cout << "Input vacío. Introduzca un polinomio" << endl << endl;
         return false;
     }
-    
     
     for(int i = 0; i < polinomio.size(); i++) {
         bool evaluadorLetra = (incognita == ' ') ? isalpha(polinomio.at(i)) : polinomio.at(i) == incognita;
@@ -175,62 +231,33 @@ bool verificarPolinomio(string& polinomio, char& incognita) {
             }
         }
         
-        // Condicional que opera en caso de que la posicion actual no cumple con ser numero, ni signo (+-), ni letra.
+        // Condicional que opera en caso de que la posicion actual no cumpla con ser numero, ni signo (+-), ni letra/exponente.
         if (!(isdigit(polinomio.at(i)) || isSign || evaluadorLetra)) {
             
-            // Condicional que evalúa que se acepte una sola incógnita
+            // Condicional que evalúa que el polinomio cuenta con una sola incógnita.
             if (isalpha(polinomio.at(i)) && (polinomio.at(i) != incognita)) {
                 cout << "Error. Solo se aceptan polinomios de una incógnita. Vuelva a introducir" << endl << endl;
                 return false;
             }
             
-            
-            // En caso de que el char actual sea punto, se evalua que sea empleado correctamente. Los aspectos a considerar son:
-            //   1. No se aceptan puntos al inicio ni al final del polinomio.
-            //   2. El punto debe estar entre dos digitos. A lo que se procede a evaluar si aquel numero es coeficiente o exponenete.
-            //   3. No se aceptan numeros con puntos decimales como 12.23.4
+            // En caso de que el char actual sea punto(.), se evalua que sea empleado correctamente.
             if (polinomio.at(i) == '.') {
-                // Caso 1
-                if (i == 0 || i == polinomio.size()-1) {
-                    cout << "Error. No se aceptan puntos decimales al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
-                    return false;
-                }
-                                
-                // Caso 2
-                if (isdigit(polinomio.at(i-1)) && isdigit(polinomio.at(i+1))) {
-                    // Se lee la expresion en reversa con el fin de encontrar si el elemento previo es un signo +- o una incognita.
-                    for (int j = i-1; j >= 0; j--) {
-                        if (polinomio.at(j) == incognita) {
-                            cout << "Error. Los grados del polinomio (exponentes) deben ser numeros naturales. Vuelva a introducir." << endl << endl;
-                            return false;
-                        } else if (polinomio.at(j) == '.') {
-                            cout << "Error. Existen varios puntos decimales en un solo numero." << endl << endl;
-                            return false;
-                        } else if (polinomio.at(j) == '+' || polinomio.at(j) == '-') {
-                            break;
-                        }
-                    }
+                if(auxVerificarPunto(polinomio, i)) {
+                    // No existe problema alguno
                     continue;
                 } else {
-                    cout << "Error. El punto decimal debe estar entre dos digitos. No se aceptan valores como .24. Vuelva a introducir" << endl << endl;
+                    // Se ha detectado un error
                     return false;
                 }
             }
-
-            // En caso de que el char actual sea *, se evalua que sea empleado correctamente. Los aspectos a considerar son:
-            //   1. No se aceptan * al inicio ni al final del polinomio.
-            //   2. El * debe estar entre un numero previo y con una incognita posterior. No se aceptan multiplicaciones.
+            
+            // En caso de que el char actual sea asterisco(*), se evalua que sea empleado correctamente.
             if (polinomio.at(i) == '*') {
-                
-                if (i == 0 || i == polinomio.size()-1) {
-                    cout << "Error. No se aceptan * al inicio ni al final del polinomio. Vuelva a introducir" << endl << endl;
-                    return false;
-                }
-                
-                if (isdigit(polinomio.at(i-1)) && isalpha(polinomio.at(i+1))) {
+                if(auxVerificarAsterisco(polinomio, i)) {
+                    // No existe problema alguno
                     continue;
                 } else {
-                    cout << "Error. El * debe estar entre un numero previo y con una incognita posterior. No se aceptan multiplicaciones. Vuelva a introducir" << endl << endl;
+                    // Se ha detectado un error
                     return false;
                 }
             }
