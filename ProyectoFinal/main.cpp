@@ -113,7 +113,7 @@ bool revisarEspaciosNumeros(string& polinomio) {
         } else if (polinomio.at(i) == ' ' && numeroDetectado) {
             for (int j = i; j < polinomio.size(); j++) {
                 if (isnumber(polinomio.at(j))) {
-                    cout << "Error. Los numeros estan separados por espacios y no por signos. Vuelva a introducir" << endl << endl;
+                    cout << "Error. Los numeros estan separados por espacios y no por signos. Vuelve a introducir" << endl << endl;
                     return false;
                 } else if (isalpha(polinomio.at(j)) || polinomio.at(j) == '*' || polinomio.at(j) == '+' || polinomio.at(j) == '-') {
                     numeroDetectado = false;
